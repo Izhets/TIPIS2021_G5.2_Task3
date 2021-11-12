@@ -18,17 +18,15 @@ public class AmplitudeModulationSpectrum {
     public ChartPanel drawSignalSpectrum(double carrierFrequency, double signalFrequency) {
         XYSeries series = new XYSeries("T * (|Math.sin(i) * T / 2)| / i * (T / 2)");
 
-        AmplitudeModulationSignalGraph ams = new AmplitudeModulationSignalGraph();
-
         double a = 0;
-        double[] Fam = ams.getFam(carrierFrequency, signalFrequency);
+        double[] outDftArray = new AmplitudeModulationSignalGraph(carrierFrequency, signalFrequency).getFam();
 
-        for (float i = 0; i < 1500 * carrierFrequency / 2; i++) {
+        for (int i = 0; i < outDftArray.length; i++) {
             series.add(a, 0);
-            series.add(a, Math.abs(Fam[(int) i]));
+            series.add(a, Math.abs(outDftArray[i]));
             series.add(a, 0);
 
-            a += (2 * Math.PI) / 1000;
+            a += (2 * Math.PI) / 25;
         }
 
         XYDataset xyDataset = new XYSeriesCollection(series);

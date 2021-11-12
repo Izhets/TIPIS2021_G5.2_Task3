@@ -47,9 +47,9 @@ public class Window extends JFrame {
 
         //Add first graph with run program
         jfreeChartPanel.removeAll();
-        AmplitudeModulationSignalGraph harmonicSignalGraph = new AmplitudeModulationSignalGraph();
+        AmplitudeModulationSignalGraph harmonicSignalGraph = new AmplitudeModulationSignalGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner());
         jfreeChartPanel
-                .add(harmonicSignalGraph.drawGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner()));
+                .add(harmonicSignalGraph.drawGraph());
         jfreeChartPanel.updateUI();
         //Add first graph with run program
 
@@ -75,16 +75,18 @@ public class Window extends JFrame {
                 for (int i = 0; i < comboBox1.getItemCount(); i++) {
                     if (comboBox1.getSelectedIndex() == 0) {
                         jfreeChartPanel.removeAll();
-                        AmplitudeModulationSignalGraph harmonicSignalGraph = new AmplitudeModulationSignalGraph();
+                        AmplitudeModulationSignalGraph harmonicSignalGraph = new AmplitudeModulationSignalGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner());
                         jfreeChartPanel
-                                .add(harmonicSignalGraph.drawGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner()));
+                                .add(harmonicSignalGraph.drawGraph());
                         jfreeChartPanel.updateUI();
+
                     } else if (comboBox1.getSelectedIndex() == 1) {
                         jfreeChartPanel.removeAll();
-                        FrequencyModulationSignalGraph fmsg = new FrequencyModulationSignalGraph();
+                        FrequencyModulationSignalGraph fmsg = new FrequencyModulationSignalGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner());
                         jfreeChartPanel
-                                .add(fmsg.drawGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner()));
+                                .add(fmsg.drawGraph());
                         jfreeChartPanel.updateUI();
+
                     } else if (comboBox1.getSelectedIndex() == 2) {
                         jfreeChartPanel.removeAll();
                         PhaseModulationSignalGraph pmsg = new PhaseModulationSignalGraph();

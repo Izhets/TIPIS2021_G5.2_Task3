@@ -10,6 +10,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 
 public class PhaseModulationSignalGraph {
 
@@ -94,9 +95,8 @@ public class PhaseModulationSignalGraph {
         for (float i = 0; i < t.length; i++) {
             s = Math.cos(w0 * t[(int) i] + f0); // модулирующий сигнал
             fm = Am * Math.signum(Math.cos(W * t[(int) i] + F0 + deltaPSI)); // фазо-модулированный
-            f = s * fm;
+            f = (s * fm);
             array4dft[(int) i] = (float) f;
-            System.out.println(i + ": " + f);
         }
 
         Fam = new DFT().dft(array4dft, 20000);

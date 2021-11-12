@@ -13,88 +13,74 @@ import java.awt.*;
 
 public class FrequencyModulationSignalGraph {
 
-    private double[] Fam;
+    private final double signalFrequency; //
+    private final double modulationFrequency; //
 
-    public ChartPanel drawGraph(double carrierFrequency, double signalFrequency) {
-        XYSeries series = new XYSeries("sign(sin(2*Pi*frequency*t)) + 1");
+    private double Fs = 100;  //Частота дискретизации
+    private double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
 
-        double Fs = 10000;  //Частота дискретизации
-        double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
+    private double F0 = 1; //Начальная фаза заполнения модулирующего сигнала
+    private double W; //Круговая частота модулирующего сигнала
 
-        double f0 = 1;    //Начальная фаза высокочастотного заполнения
-        double w0 = 2 * Math.PI * f0 * carrierFrequency; //Круговая частота
+    private double f0 = 1; //Начальная фаза заполнения частотно-модулированного сигнала
+    private double w0; //Круговая частота частотно-модулированного сигнала
 
-        double F0 = 1;
-        double W = 2 * Math.PI * F0 * signalFrequency;
+    private double deltaW = 1;
+    private double Beta;
 
-        double deltaw = 10;
-        double Beta = deltaw/W;
+    private double[] t = new double[200]; //Массив с точками
 
-        double[] t = new double[20000]; //Массив с точками
+    private double s; //Модулирующий сигнал s(t) - гармоническое (однотональное) колебание
+    double fm; // Частотно-модулированный сигнал
+
+    public float[] array4dft = new float[1000]; //Массив для dft
+
+    public FrequencyModulationSignalGraph(double signalFrequency, double modulationFrequency) {
+        this.signalFrequency = signalFrequency;
+        this.modulationFrequency = modulationFrequency;
 
         for (double i = 0; i < t.length; i++) {
             t[(int) i] = (i / Fs);
         }
 
-        double f = 0;
+        W = 2 * Math.PI * F0 * signalFrequency;
+        w0 = 2 * Math.PI * f0 * modulationFrequency;
 
+        Beta = deltaW / W;
+    }
+
+    public ChartPanel drawGraph() {
+        XYSeries series = new XYSeries("Am cos(w0t + f0 + Beta sin(Wt + F0))");
+
+        // 2 холостые точки для того, чтобы уменьшить область просмотра
         series.add(0, 2);
         series.add(0, -2);
 
-        for (float i = 0; i < t.length; i++) {
-            f = Am * Math.cos(w0 * t[(int) i] * carrierFrequency + f0 + Beta * Math.sin(W * t[(int) i] * carrierFrequency + F0));
-            series.add(t[(int) i] * carrierFrequency, f);
+        for (int i = 0; i < t.length; i++) {
+            s = Math.cos(Math.sin(W * t[i] + F0));
+            fm = Am * Math.signum(Math.cos(w0 * t[i] + f0 + Beta));
+            fm = fm * s;
+
+            array4dft[i] = (float) fm; // Добавление полученных точек в массив
+
+            series.add(t[i] * modulationFrequency, fm); // Печать на график
         }
 
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory
-                .createXYLineChart("График модуляции гармонического сигнала (меандр)" + "\n Частота: " + carrierFrequency + " Гц", "t", "A (U)",
-                        xyDataset,
-                        PlotOrientation.VERTICAL,
-                        true, true, true);
-        ChartPanel frame =
-                new ChartPanel(chart);
+                .createXYLineChart("График сигнала частотной модуляции меандром" + "\n Несущая частота: " + signalFrequency + " Гц" + " " + "Частота высокочастотного заполнения: " + modulationFrequency + " Гц", "Гц", "А",
+                        xyDataset, PlotOrientation.VERTICAL, true, true, true);
+        ChartPanel frame = new ChartPanel(chart);
         frame.setPreferredSize(new Dimension(850, 500));
 
-
         return frame;
-
     }
 
-
-    public double[] getFam(double carrierFrequency, double signalFrequency) {
-        double Fs = 10000;  //Частота дискретизации
-        double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
-
-        double f0 = 10;    //Начальная фаза высокочастотного заполнения
-        double w0 = 2 * Math.PI * f0 * carrierFrequency; //Круговая частота
-
-        double F0 = 1;
-        double W = 2 * Math.PI * F0 * signalFrequency;
-
-        double deltaw = 10;
-        double Beta = deltaw/W;
-
-        double[] t = new double[20000]; //Массив с точками
-
-        for (double i = 0; i < t.length; i++) {
-            t[(int) i] = (i / Fs);
-        }
-
-        double f = 0;
-
-        float[] array4dft = new float[20000]; //Массив для dft
-
-
-        for (float i = 0; i < t.length; i++) {
-            f = Am * Math.cos(w0 * t[(int) i] * carrierFrequency + f0 + Beta * Math.sin(W * t[(int) i] * carrierFrequency + F0));
-            // series.add(t[(int) i] * carrierFrequency, f);
-            array4dft[(int) i] = (float) f;
-        }
-
-        Fam = new DFT().dft(array4dft, 20000);
-
-        return Fam;
+    // Getter, который отдаст преобразованный массив точек (у) после преобразоания Фурье
+    public double[] getOutDftArray() {
+        drawGraph();
+        DFT dft = new DFT();
+        return dft.dft(array4dft, 200);
     }
 
 }

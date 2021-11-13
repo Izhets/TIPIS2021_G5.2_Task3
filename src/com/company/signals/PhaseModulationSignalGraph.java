@@ -10,99 +10,73 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
-import java.text.DecimalFormat;
 
 public class PhaseModulationSignalGraph {
 
-    private double[] Fam;
+    private final double signalFrequency; // Частота модулирующего сигнала
+    private final double modulationFrequency; // Частота частотно-модулированного сигнала
 
-    public ChartPanel drawGraph(double signalFrequency, double fmFrequency) {
-        XYSeries series = new XYSeries("sign(sin(2*Pi*frequency*t)) + 1");
+    private double Fs = 100;  //Частота дискретизации
+    private double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
 
-        double Fs = 10000;  //Частота дискретизации
+    private double F0 = 1; //Начальная фаза заполнения модулирующего сигнала
+    private double W; //Круговая частота модулирующего сигнала
 
-        double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
+    private double f0 = 1; //Начальная фаза заполнения частотно-модулированного сигнала
+    private double w0; //Круговая частота частотно-модулированного сигнала
 
-        double f0 = 10; //Начальная фаза высокочастотного заполнения
-        double w0 = 2 * Math.PI * f0 * signalFrequency; //Круговая частота
+    private double deltaPSI;
 
-        double F0 = 1;
-        double W = 2 * Math.PI * F0 * fmFrequency;
+    private double[] t = new double[200]; //Массив с точками
 
+    private double s; //Модулирующий сигнал s(t) - гармоническое (однотональное) колебание
+    private double pm; // Фазово-модулированный сигнал
 
-        double[] t = new double[20000]; //Массив с точками
+    private float[] array4dft = new float[1000]; //Массив для dft
+
+    public PhaseModulationSignalGraph(double signalFrequency, double modulationFrequency) {
+        this.signalFrequency = signalFrequency;
+        this.modulationFrequency = modulationFrequency;
 
         for (double i = 0; i < t.length; i++) {
             t[(int) i] = (i / Fs);
         }
 
-        double deltaPSI = W * (2);
+        W = 2 * Math.PI * F0 * signalFrequency;
+        w0 = 2 * Math.PI * f0 * modulationFrequency;
 
-        double s = 0;
-        double fm = 0;
-        double f = 0;
+        deltaPSI = 1;
+    }
+
+    public ChartPanel drawGraph() {
+        XYSeries series = new XYSeries("sign(sin(2*Pi*frequency*t)) + 1");
 
         series.add(0, 1.5);
         series.add(0, -1.5);
 
-        for (float i = 0; i < t.length; i++) {
-            s = Math.cos(w0 * t[(int) i] + f0); // модулирующий сигнал
-            fm = Am * Math.signum(Math.cos(W * t[(int) i] + F0 + deltaPSI)); // фазо-модулированный
-            f = s * fm;
-            series.add(t[(int) i], f);
+        for (int i = 0; i < t.length; i++) {
+            pm = Am * Math.cos(w0 * t[i] + f0 + deltaPSI * Math.signum(Math.cos(W * t[i] + F0)));
+
+            array4dft[i] = (float) pm; // Добавление полученных точек в массив
+            series.add(t[i] * modulationFrequency, pm);
+
         }
 
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory
                 .createXYLineChart("График амплитудной модуляции гармонического сигнала" + "\n Частота: " + signalFrequency + " Гц", "t", "A (U)",
-                        xyDataset,
-                        PlotOrientation.VERTICAL,
-                        true, true, true);
-        ChartPanel frame =
-                new ChartPanel(chart);
+                        xyDataset, PlotOrientation.VERTICAL, true, true, true);
+        ChartPanel frame = new ChartPanel(chart);
         frame.setPreferredSize(new Dimension(850, 500));
 
 
         return frame;
     }
 
-    public double[] getFam(double signalFrequency, double fmFrequency) {
-        double Fs = 10000;  //Частота дискретизации
-
-        double Am = 1;  //Амплитуда несущего колебания в отсутствии модуляции
-
-        double f0 = 10; //Начальная фаза высокочастотного заполнения
-        double w0 = 2 * Math.PI * f0 * signalFrequency; //Круговая частота
-
-        double F0 = 1;
-        double W = 2 * Math.PI * F0 * fmFrequency;
-
-
-        double[] t = new double[20000]; //Массив с точками
-
-        for (double i = 0; i < t.length; i++) {
-            t[(int) i] = (i / Fs);
-        }
-
-        double deltaPSI = W * (2);
-
-        double s = 0;
-        double fm = 0;
-        double f = 0;
-
-        float[] array4dft = new float[20000]; //Массив для dft
-
-        for (float i = 0; i < t.length; i++) {
-            s = Math.cos(w0 * t[(int) i] + f0); // модулирующий сигнал
-            fm = Am * Math.signum(Math.cos(W * t[(int) i] + F0 + deltaPSI)); // фазо-модулированный
-            f = (s * fm);
-            array4dft[(int) i] = (float) f;
-        }
-
-        Fam = new DFT().dft(array4dft, 20000);
-
-
-        return Fam;
+    public double[] getOutDftArray() {
+        drawGraph();
+        DFT dft = new DFT();
+        return dft.dft(array4dft, 200);
     }
 
 }

@@ -35,7 +35,7 @@ public class AmplitudeModulationSignalGraph {
     private double s; //Модулирующий сигнал s(t) - гармоническое (однотональное) колебание
     private double am; // Амплитудно-модулированный сигнал
 
-    public float[] array4dft = new float[1000]; //Массив для dft
+    private float[] array4dft = new float[1000]; //Массив для dft
 
     public AmplitudeModulationSignalGraph(double signalFrequency, double modulationFrequency) {
         this.signalFrequency = signalFrequency;
@@ -47,7 +47,6 @@ public class AmplitudeModulationSignalGraph {
 
         W = 2 * Math.PI * F0 * signalFrequency;
         w0 = 2 * Math.PI * f0 * modulationFrequency;
-
     }
 
     public ChartPanel drawGraph() {
@@ -58,7 +57,8 @@ public class AmplitudeModulationSignalGraph {
 
         for (int i = 0; i < t.length; i++) {
             s = 1 + m * Math.signum(Math.cos(W * t[i] + F0));
-            am = Am * s * Math.cos(w0 * t[i] + f0);
+            am = Math.cos(w0 * t[i] + f0);
+            am = Am * s * am;
 
             array4dft[i] = (float) am; // Добавление полученных точек в массив
             series.add(t[i] * modulationFrequency, am); // Печать на график
@@ -74,7 +74,8 @@ public class AmplitudeModulationSignalGraph {
         return frame;
     }
 
-    public double[] getFam() {
+    // Getter, который отдаст преобразованный массив точек (у) после преобразоания Фурье
+    public double[] getOutDftArray() {
         drawGraph();
         DFT dft = new DFT();
         return dft.dft(array4dft, 200);

@@ -25,7 +25,7 @@ public class FrequencyModulationSignalGraph {
     private double f0 = 1; //Начальная фаза заполнения частотно-модулированного сигнала
     private double w0; //Круговая частота частотно-модулированного сигнала
 
-    private double deltaW = 1;
+    private double deltaw = 10;
     private double Beta;
 
     private double[] t = new double[200]; //Массив с точками
@@ -46,20 +46,18 @@ public class FrequencyModulationSignalGraph {
         W = 2 * Math.PI * F0 * signalFrequency;
         w0 = 2 * Math.PI * f0 * modulationFrequency;
 
-        Beta = deltaW / W;
+        Beta = deltaw / W;
     }
 
     public ChartPanel drawGraph() {
         XYSeries series = new XYSeries("Am cos(w0t + f0 + Beta sin(Wt + F0))");
 
         // 2 холостые точки для того, чтобы уменьшить область просмотра
-        series.add(0, 2);
-        series.add(0, -2);
+        series.add(0, 1.5);
+        series.add(0, -1.5);
 
         for (int i = 0; i < t.length; i++) {
-            s = Math.cos(Math.sin(W * t[i] + F0));
-            fm = Am * Math.signum(Math.cos(w0 * t[i] + f0 + Beta));
-            fm = fm * s;
+            fm = Math.cos(w0 * t[i] + f0 + Beta * Math.signum(Math.cos(W * t[i] + F0)));
 
             array4dft[i] = (float) fm; // Добавление полученных точек в массив
 

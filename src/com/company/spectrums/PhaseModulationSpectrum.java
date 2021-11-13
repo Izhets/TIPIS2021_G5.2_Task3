@@ -1,6 +1,5 @@
 package com.company.spectrums;
 
-import com.company.signals.FrequencyModulationSignalGraph;
 import com.company.signals.PhaseModulationSignalGraph;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -12,40 +11,32 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.*;
 
+//Спектр фзовой модуляции
 public class PhaseModulationSpectrum {
 
-    public ChartPanel drawSignalSpectrum(double carrierFrequency, double signalFrequency) {
+    public ChartPanel drawSignalSpectrum(double signalFrequency, double modulationFrequency) {
         XYSeries series = new XYSeries("T * (|Math.sin(i) * T / 2)| / i * (T / 2)");
 
-        PhaseModulationSignalGraph pmsg = new PhaseModulationSignalGraph();
-
         double a = 0;
-        double[] Fam = pmsg.getFam(carrierFrequency, signalFrequency);
+        double[] outDftArray = new PhaseModulationSignalGraph(signalFrequency, modulationFrequency).getOutDftArray();
 
-        for (float i = 0; i < 1500 * carrierFrequency && a <= 10  * carrierFrequency; i++) {
+        for (int i = 0; i < outDftArray.length; i++) {
             series.add(a, 0);
-            series.add(a, Math.abs(Fam[(int) i]));
+            series.add(a, Math.abs(outDftArray[i]) * 10 / 5.5);
             series.add(a, 0);
 
-            a += (2 * Math.PI) / 100;
+            a += (2 * Math.PI) / 25;
         }
-
-        System.out.println(a);
 
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory
-                .createXYLineChart("График спектра амплитудной модуляции" + "\n Частота: " + carrierFrequency + " Гц", "Гц", "А",
-                        xyDataset,
-                        PlotOrientation.VERTICAL,
-                        true, true, true);
+                .createXYLineChart("График спектра амплитудной модуляции" + "\n Частота: " + signalFrequency + " Гц", "Гц", "А",
+                        xyDataset, PlotOrientation.VERTICAL, true, true, true);
 
-        ChartPanel frame =
-                new ChartPanel(chart);
-        frame.setPreferredSize(new
-
-                Dimension(850, 500));
+        ChartPanel frame = new ChartPanel(chart);
+        frame.setPreferredSize(new Dimension(850, 500));
 
         return frame;
     }
-
 }
+

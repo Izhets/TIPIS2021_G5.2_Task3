@@ -14,16 +14,15 @@ import java.awt.*;
 //Спектр частотной модуляции
 public class FrequencyModulationSpectrum {
 
-    public ChartPanel drawSignalSpectrum(double carrierFrequency, double signalFrequency) {
+    public ChartPanel drawSignalSpectrum(double signalFrequency, double modulationFrequency) {
         XYSeries series = new XYSeries("Am cos(w0t + f0 + Beta sin(Wt + F0))");
 
         double a = 0;
-
-        double[] outDftArray = new FrequencyModulationSignalGraph(carrierFrequency,signalFrequency).getOutDftArray();
+        double[] outDftArray = new FrequencyModulationSignalGraph(signalFrequency,modulationFrequency).getOutDftArray();
 
         for (int i = 0; i < outDftArray.length; i++) {
             series.add(a, 0);
-            series.add(a, Math.abs(outDftArray[i]));
+            series.add(a, Math.abs(outDftArray[i]) * 10 / 6.5);
             series.add(a, 0);
 
             a += (2 * Math.PI) / 25;
@@ -31,7 +30,7 @@ public class FrequencyModulationSpectrum {
 
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory
-                .createXYLineChart("График спектра частотной модуляции" + "\n Несущая частота: " + carrierFrequency + " Гц" + " " + "Частота высокочастотного заполнения: " + signalFrequency + " Гц", "Гц", "А",
+                .createXYLineChart("График спектра частотной модуляции" + "\n Несущая частота: " + signalFrequency + " Гц" + " " + "Частота высокочастотного заполнения: " + modulationFrequency + " Гц", "Гц", "А",
                         xyDataset, PlotOrientation.VERTICAL, true, true, true);
 
         ChartPanel frame = new ChartPanel(chart);

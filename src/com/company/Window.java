@@ -25,7 +25,7 @@ public class Window extends JFrame {
 
     public Window() throws NullPointerException, IOException {
         carrierFrequencySpinner.setValue(1);
-        signalFrequencySpinner.setValue(1);
+        signalFrequencySpinner.setValue(10);
         this.setTitle("ТИПИС2021 | Задача 2 | Хныкин Д.Е. | Группа 5.2");
         this.setContentPane(mainPanel);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +68,6 @@ public class Window extends JFrame {
             }
         });
 
-
         createFunctionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -89,9 +88,9 @@ public class Window extends JFrame {
 
                     } else if (comboBox1.getSelectedIndex() == 2) {
                         jfreeChartPanel.removeAll();
-                        PhaseModulationSignalGraph pmsg = new PhaseModulationSignalGraph();
+                        PhaseModulationSignalGraph pmsg = new PhaseModulationSignalGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner());
                         jfreeChartPanel
-                                .add(pmsg.drawGraph(getCarrierFrequencySpinner(), getSignalFrequencySpinner()));
+                                .add(pmsg.drawGraph());
                         jfreeChartPanel.updateUI();
                     }
                 }
